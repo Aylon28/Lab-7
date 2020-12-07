@@ -1,25 +1,17 @@
 #include <iostream>
 using namespace std;
 
-class data{
-public:
-	int number;
-
-	data(){
-		number = 0;
-	}
-
-	data(int num){
-		number = num;
-	}
+template <class T>
+struct data{
+	T number;
 };
 
-
+template <class T>
 class object{
 public:
-	data info;
-	object *left;
-	object *right;
+	data<T> info;
+	object<T> *left;
+	object<T> *right;
 
 	static int sum;
 	static int count;
@@ -29,28 +21,31 @@ public:
 		left = NULL;
 		right = NULL;
 	}
-	object(data i){
+	object(data<T> i){
 		info = i;
 		left = NULL;
 		right = NULL;
-		object::count++;
+		object<T>::count++;
 		sum += i.number;
 	};
 
 	static void Average();
 
-	void operator+=(data& num); //Add new object
-	friend std::ostream& operator<< (std::ostream &out, const object &obj); //Show tree
+	void operator+=(data<T>& num); //Add new object
+	friend std::ostream& operator<< (std::ostream &out, const object<T> &obj); //Show tree
 	void operator-=(int num); //Find and delete the number
 };
 
-int object::count = 0;
-int object::sum = 0;
+template <class T>
+int object<T>::count = 0;
+template <class T>
+int object<T>::sum = 0;
+template <class T>
+object<T>* root = NULL;
 
-object* root = NULL;
-
-object* Find_place(object* to_add, object* temp){
-	object* temp2 = temp;
+template <class T>
+object<T>* Find_place(object<T>* to_add, object<T>* temp){
+	object<T>* temp2 = temp;
 
 	while(temp != NULL){
 		temp2 = temp;
@@ -66,13 +61,14 @@ object* Find_place(object* to_add, object* temp){
 	return temp2;
 }
 
-void object::operator +=(data& num){
+template <class T>
+void object<T>::operator +=(data<T>& num){
 	object* new_obj = new object(num);
 
-	if(root == NULL){
-		root = new_obj;
+	if(root<T> == NULL){
+		root<T> = new_obj;
 	} else {
-		object* place = Find_place(new_obj, root);
+		object* place = Find_place(new_obj, root<T>);
 
 		if(place->info.number > new_obj->info.number){
 			place->left = new_obj;
@@ -84,56 +80,50 @@ void object::operator +=(data& num){
 	}
 }
 
-object* FindToDel(int num){
-	object* temp = root;
-	object* temp2 = temp;
-
-	while(temp != NULL && temp->info.number != num){
-		temp2 = temp;
-		if(temp->info.number > num){
-			temp = temp->left;
-		} else if(temp->info.number < num){
-			temp = temp->right;
-		}
-	}
-
-	if(temp == NULL){
-		return NULL;
-	}
-
-	return temp2;
-}
-
-void Del_object(object* obj){
+template <class T>
+void Del_object(object<T>* obj){
 	if(obj == NULL){
 		return;
 	}
 
 	Del_object(obj->left);
 	Del_object(obj->right);
-	object::count--;
-	object::sum -= obj->info.number;
+	object<T>::count--;
+	object<T>::sum -= obj->info.number;
 	delete obj;
 }
 
-void object::operator-=(int num){
-	if(root == NULL){
+template <class T>
+void object<T>::operator-=(int num){
+	if(root<T> == NULL){
 		cout << "Tree is empty!";
 		return;
 	}
-	if(root->info.number == num){
-		Del_object(root->left);
-		Del_object(root->right);
-		root = NULL;
-		object::sum = 0;
-		object::count = 0;
+	if(root<T>->info.number == num){
+		Del_object(root<T>->left);
+		Del_object(root<T>->right);
+		root<T> = NULL;
+		object<T>::sum = 0;
+		object<T>::count = 0;
 		cout << endl << "Whole tree is deleted" << endl;
 	} else{
-		object* obj = FindToDel(num);
+		object<T>* obj = root<T>;
+		object<T>* temp = obj;
+
+		while(obj!= NULL && obj->info.number != num){
+			temp = obj;
+			if(obj->info.number > num){
+				obj = obj->left;
+			} else if(obj->info.number < num){
+				obj = obj->right;
+			}
+		}
 
 		if(obj == NULL){
 			cout << endl << "There's no such a number to delete!" << endl;
 			return;
+		} else{
+			obj = temp;
 		}
 
 		if(obj->info.number > num){
@@ -148,7 +138,8 @@ void object::operator-=(int num){
 	}
 }
 
-void Show_obj(object* obj){
+template <class T>
+void Show_obj(object<T>* obj){
 	if(obj == NULL){
 		return;
 	}
@@ -159,22 +150,24 @@ void Show_obj(object* obj){
 	Show_obj(obj->right);
 }
 
-std::ostream& operator<< (std::ostream &out, const object &obj){
-	if(root == NULL){
+template <class T>
+std::ostream& operator<< (std::ostream &out, object<T> &obj){
+	if(root<T> == NULL){
 		cout << "Tree is empty!";
 		return out;
 	}
 
 	cout << endl << endl << "Hi! I'm a tree!" << endl;
-	cout << root->info.number;
+	cout << root<T>->info.number;
 
-	Show_obj(root->left);
-	Show_obj(root->right);
+	Show_obj(root<T>->left);
+	Show_obj(root<T>->right);
 	return out;
 }
 
-void object::Average(){
-	if(root == NULL){
+template <class T>
+void object<T>::Average(){
+	if(root<T> == NULL){
 		cout << "Tree is empty";
 	} else{
 		cout << endl << endl << "The average = " << (double)object::sum/object::count << endl;
@@ -204,15 +197,15 @@ string IsCorrect(string request){
 
 int main(){
 	cout << "The generated numbers: 50";
-	data d_root(50);
-	object o_root;
+	data<int> d_root = {50};
+	object<int> o_root;
 	o_root += d_root;
 
 	for(int i = 0; i < 10; i++){
 		int rand_num = rand() % 100;
 
-		data d_el(rand_num);
-		object o_el;
+		data<int> d_el = {rand_num};
+		object<int> o_el;
 		o_el += d_el;
 		cout << ", " << rand_num ;
 	}
@@ -241,7 +234,7 @@ int main(){
 			o_root-=stoi(del_num);
 			break;
 		case 3:
-			object::Average();
+			object<int>::Average();
 			break;
 		case 4:
 			cout << o_root;
@@ -254,4 +247,3 @@ int main(){
 	cout << "Goodbye";
 	return 0;
 }
-
