@@ -13,7 +13,7 @@ public:
 	object<T> *left;
 	object<T> *right;
 
-	static int sum;
+	static T sum;
 	static int count;
 
 public:
@@ -39,7 +39,7 @@ public:
 template <class T>
 int object<T>::count = 0;
 template <class T>
-int object<T>::sum = 0;
+T object<T>::sum = 0;
 template <class T>
 object<T>* root = NULL;
 
